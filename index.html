@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Granduer Investments — Client Portal (No-Node)</title>
+
+<style>
+  :root{--brand:#1f78ff;--ink:#0f172a;--muted:#475569;--ring:#e2e8f0;--bg:#f8fafc;--card:#fff}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--ring)}
+  .container{max-width:1100px;margin:auto;padding:14px 20px}
+  .brand{font-weight:800;display:flex;align-items:center;gap:.6rem}
+  .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#8ab6ff)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .card{background:var(--card);border:1px solid var(--ring);border-radius:14px;box-shadow:0 8px 24px rgba(2,8,23,.06);padding:14px}
+  .btn{background:var(--brand);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+  .btn.alt{background:#fff;color:var(--brand);border:1px solid var(--ring)}
+  .input, select, textarea{border:1px solid var(--ring);border-radius:10px;padding:10px 12px;font:inherit}
+  .grid{display:grid;gap:14px}
+  .two{grid-template-columns:1fr 1fr}
+  .three{grid-template-columns:1fr 1fr 1fr}
+  .badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#e6f0ff;color:#0f49b4;font-size:12px}
+  .list{max-height:360px;overflow:auto}
+  .msg{border:1px solid var(--ring);border-radius:10px;padding:8px 10px;margin-top:8px;background:#fff}
+  .muted{color:var(--muted);font-size:12px}
+  @media(max-width:900px){.two,.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container row" style="align-items:center;justify-content:space-between">
+    <div class="brand"><span class="logo"></span> Granduer Investments</div>
+    <div class="row" id="authBar">
+      <span id="who" class="badge" style="display:none"></span>
+      <button id="btnShowSign" class="btn alt">Sign in / Sign up</button>
+      <button id="btnSignOut" class="btn alt" style="display:none">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="container grid two" style="margin-top:16px">
+  <!-- Left: Rooms -->
+  <section class="card">
+    <h3 style="margin:6px 0 10px">Rooms</h3>
+    <div class="row">
+      <select id="clientType" class="input">
+        <option value="student">Student</option>
+        <option value="visitor">Visitor</option>
+        <option value="worker">Worker</option>
+      </select>
+      <input id="roomName" class="input" placeholder="Room name (e.g., Jane Doe)" style="min-width:220px" />
+      <button id="btnNewRoom" class="btn">Create room</button>
+    </div>
+    <div class="muted" style="margin-top:6px">You’ll only see rooms where you’re a member.</div>
+    <div id="rooms" class="list" style="margin-top:10px"></div>
+  </section>
+
+  <!-- Right: Chat -->
+  <section class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div class="muted">Room</div>
+        <h3 id="roomTitle" style="margin:6px 0">None selected</h3>
+      </div>
+      <div id="signedBadge" class="badge" style="display:none">Signed in</div>
+    </div>
+
+    <div id="chatArea" style="display:none">
+      <div id="messages" class="list" style="height:280px"></div>
+      <div class="row" style="margin-top:10px">
+        <input id="msgText" class="input" placeholder="Type a message…" style="flex:1" />
+        <button id="btnSend" class="btn">Send</button>
+      </div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <input id="fileInput" type="file" class="input" />
+        <button id="btnUpload" class="btn">Upload</button>
+      </div>
+      <div class="muted" style="margin-top:6px">Files go to Firebase Storage. A message with the file link appears here.</div>
+    </div>
+
+    <div id="blocked" class="muted">Sign in and select a room to start.</div>
+  </section>
+</main>
+
+<!-- Auth Dialog -->
+<div id="authModal" class="card" style="position:fixed;inset:auto 0 0 0;max-width:520px;margin:auto;display:none">
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <h3 style="margin:6px 0">Sign in / Sign up</h3>
+    <button id="closeModal" class="btn alt">Close</button>
+  </div>
+  <div class="grid two" style="margin-top:8px">
+    <div>
+      <h4>Sign up</h4>
+      <input id="suEmail" class="input" type="email" placeholder="Email" />
+      <input id="suPass" class="input" type="password" placeholder="Password" />
+      <button id="btnSignUp" class="btn" style="margin-top:6px">Create account</button>
+    </div>
+    <div>
+      <h4>Sign in</h4>
+      <input id="siEmail" class="input" type="email" placeholder="Email" />
+      <input id="siPass" class="input" type="password" placeholder="Password" />
+      <button id="btnSignIn" class="btn" style="margin-top:6px">Sign in</button>
+    </div>
+  </div>
+  <div id="authError" class="muted" style="color:#b91c1c;margin-top:8px"></div>
+</div>
+
+<!-- Firebase (no Node required) -->
+<script type="module">
+  // --- 1) Firebase CDN imports ---
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { 
+    getAuth, onAuthStateChanged, createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, signOut 
+  } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+  import { 
+    getFirestore, collection, addDoc, doc, setDoc, getDoc, onSnapshot, 
+    query, where, orderBy, serverTimestamp 
+  } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+  import { 
+    getStorage, ref, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+
+  // --- 2) Paste YOUR Firebase config here ---
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+  };
+
+  // --- 3) Init services ---
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // --- UI refs ---
+  const who = document.getElementById('who');
+  const authModal = document.getElementById('authModal');
+  const btnShowSign = document.getElementById('btnShowSign');
+  const btnSignOut = document.getElementById('btnSignOut');
+  const closeModal = document.getElementById('closeModal');
+  const suEmail = document.getElementById('suEmail'); const suPass = document.getElementById('suPass');
+  const siEmail = document.getElementById('siEmail'); const siPass = document.getElementById('siPass');
+  const btnSignUp = document.getElementById('btnSignUp'); const btnSignIn = document.getElementById('btnSignIn');
+  const authError = document.getElementById('authError');
+  const clientType = document.getElementById('clientType'); const roomName = document.getElementById('roomName');
+  const btnNewRoom = document.getElementById('btnNewRoom'); const roomsEl = document.getElementById('rooms');
+  const roomTitle = document.getElementById('roomTitle'); const chatArea = document.getElementById('chatArea');
+  const blocked = document.getElementById('blocked'); const signedBadge = document.getElementById('signedBadge');
+  const messagesEl = document.getElementById('messages'); const msgText = document.getElementById('msgText');
+  const btnSend = document.getElementById('btnSend'); const fileInput = document.getElementById('fileInput');
+  const btnUpload = document.getElementById('btnUpload');
+
+  let currentUser = null;
+  let activeRoomId = null;
+  let messagesUnsub = null;
+
+  // --- Auth modal controls ---
+  btnShowSign.onclick = () => (authModal.style.display = 'block');
+  closeModal.onclick = () => (authModal.style.display = 'none');
+
+  btnSignUp.onclick = async () => {
+    authError.textContent = '';
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, suEmail.value, suPass.value);
+      // create user doc (role: client by default)
+      await setDoc(doc(db, 'users', cred.user.uid), { role: 'client', createdAt: serverTimestamp() });
+      authModal.style.display = 'none';
+    } catch (e) { authError.textContent = e.message; }
+  };
+  btnSignIn.onclick = async () => {
+    authError.textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, siEmail.value, siPass.value);
+      authModal.style.display = 'none';
+    } catch (e) { authError.textContent = e.message; }
+  };
+  btnSignOut.onclick = () => signOut(auth);
+
+  // --- Auth state ---
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    who.style.display = user ? 'inline-flex' : 'none';
+    btnShowSign.style.display = user ? 'none' : 'inline-flex';
+    btnSignOut.style.display = user ? 'inline-flex' : 'none';
+    signedBadge.style.display = user ? 'inline-flex' : 'none';
+    who.textContent = user ? (user.email || 'Signed in') : '';
+    if (user) {
+      watchRooms();
+    } else {
+      roomsEl.innerHTML = '';
+      setActiveRoom(null);
+    }
+  });
+
+  // --- Rooms list (only where I'm a member) ---
+  function watchRooms() {
+    const q = query(collection(db, 'rooms'), where('memberIds', 'array-contains', currentUser.uid));
+    onSnapshot(q, (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      arr.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)); // client-side order
+      roomsEl.innerHTML = '';
+      if (arr.length === 0) roomsEl.innerHTML = '<div class="muted">No rooms yet.</div>';
+      for (const r of arr) {
+        const b = document.createElement('button');
+        b.className = 'btn alt';
+        b.style.margin='6px 6px 0 0';
+        b.textContent = `${r.name} — ${r.clientType}`;
+        b.onclick = () => setActiveRoom(r);
+        roomsEl.appendChild(b);
+      }
+    });
+  }
+
+  // --- Create room ---
+  btnNewRoom.onclick = async () => {
+    if (!currentUser) return alert('Sign in first.');
+    const name = roomName.value.trim();
+    if (!name) return alert('Enter room name.');
+    await addDoc(collection(db, 'rooms'), {
+      name, clientType: clientType.value, memberIds: [currentUser.uid],
+      createdAt: Date.now(), createdAtServer: serverTimestamp()
+    });
+    roomName.value = '';
+  };
+
+  // --- Activate room & watch messages ---
+  function setActiveRoom(room) {
+    if (messagesUnsub) messagesUnsub();
+    activeRoomId = room?.id || null;
+    roomTitle.textContent = room ? `${room.name} — ${room.clientType}` : 'None selected';
+    chatArea.style.display = room && currentUser ? 'block' : 'none';
+    blocked.style.display = room && currentUser ? 'none' : 'block';
+    messagesEl.innerHTML = '';
+    if (!room || !currentUser) return;
+
+    const msgsQ = query(
+      collection(db, 'rooms', activeRoomId, 'messages'),
+      orderBy('createdAt', 'asc')
+    );
+    messagesUnsub = onSnapshot(msgsQ, (snap) => {
+      messagesEl.innerHTML = '';
+      for (const d of snap.docs) {
+        const m = d.data();
+        const div = document.createElement('div');
+        div.className = 'msg';
+        let html = `<div class="muted">${m.displayName || m.uid} • ${m.createdAt ? new Date(m.createdAt).toLocaleString() : ''}</div>`;
+        if (m.text) html += `<div>${m.text}</div>`;
+        if (m.fileUrl) html += `<div><a href="${m.fileUrl}" target="_blank">📎 ${m.fileName || 'Attachment'}</a></div>`;
+        div.innerHTML = html;
+        messagesEl.appendChild(div);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+  }
+
+  // --- Send text ---
+  btnSend.onclick = async () => {
+    if (!currentUser || !activeRoomId) return;
+    const t = msgText.value.trim(); if (!t) return;
+    await addDoc(collection(db, 'rooms', activeRoomId, 'messages'), {
+      uid: currentUser.uid,
+      displayName: currentUser.email,
+      text: t,
+      createdAt: Date.now(),
+      createdAtServer: serverTimestamp()
+    });
+    msgText.value = '';
+  };
+
+  // --- Upload file ---
+  btnUpload.onclick = async () => {
+    if (!currentUser || !activeRoomId) return alert('Select room and sign in.');
+    const f = fileInput.files?.[0]; if (!f) return alert('Choose a file.');
+    const path = `rooms/${activeRoomId}/${currentUser.uid}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g,'_')}`;
+    const fileRef = ref(storage, path);
+    await uploadBytes(fileRef, f);
+    const url = await getDownloadURL(fileRef);
+    await addDoc(collection(db, 'rooms', activeRoomId, 'messages'), {
+      uid: currentUser.uid,
+      displayName: currentUser.email,
+      fileUrl: url,
+      fileName: f.name,
+      createdAt: Date.now(),
+      createdAtServer: serverTimestamp()
+    });
+    fileInput.value = '';
+  };
+</script>
+</body>
+</html>

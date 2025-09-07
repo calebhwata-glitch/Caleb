@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Granduer Investments — Client Portal</title>
+  <meta name="description" content="Secure portal for students, visitors, and workers to chat and exchange documents with Granduer Investments." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#1f78ff; --brand-dark:#0f49b4; --ink:#0f172a; --muted:#475569; --bg:#f8fafc; --card:#ffffff; --ring:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+    .container{max-width:1100px;margin-inline:auto;padding:0 20px}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--brand);color:#fff;border:none;border-radius:14px;padding:12px 18px;font-weight:600;cursor:pointer;box-shadow:0 6px 16px rgba(31,120,255,.25)}
+    .btn:hover{background:var(--brand-dark)}
+    .btn-outline{background:#fff;color:var(--brand);border:1px solid var(--ring);box-shadow:none}
+    .btn-outline:hover{border-color:var(--brand)}
+    header{position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--ring)}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .nav-links{display:flex;gap:20px}
+    .nav-links a{color:var(--muted);text-decoration:none;font-weight:600}
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:800}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#8ab6ff)}
+    /* Hero */
+    .hero{padding:64px 0 40px}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
+    .hero h1{font-size:44px;line-height:1.05;margin:0 0 14px}
+    .eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:#e6f0ff;color:var(--brand-dark);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .card{background:var(--card);border:1px solid var(--ring);border-radius:18px;box-shadow:0 10px 30px rgba(2,8,23,.06)}
+    .upload-card{padding:18px}
+    .row{display:flex;gap:12px}
+    .input{width:100%;border:1px solid var(--ring);border-radius:12px;padding:10px 12px;font:inherit}
+    .helper{font-size:12px;color:var(--muted);margin-top:6px}
+    /* Sections */
+    section{padding:56px 0}
+    h2{font-size:28px;margin:0 0 18px}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .feat{padding:18px}
+    .feat h3{margin:10px 0 6px;font-size:18px}
+    .tag{display:inline-flex;align-items:center;gap:.5rem;background:#f1f5f9;color:#0f172a;padding:6px 10px;border-radius:999px;font-size:12px}
+    /* Footer */
+    footer{border-top:1px solid var(--ring);padding:30px 0;font-size:14px;color:var(--muted)}
+    /* Responsive */
+    @media (max-width:900px){ .hero-grid{grid-template-columns:1fr} .features{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <div class="brand"><span class="logo"></span> Granduer Investments</div>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#contact">Contact</a>
+          <a class="btn btn-outline" href="#portal">Sign in</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">Secure Client Portal</span>
+          <h1>Chat and exchange documents with students, visitors, and workers—safely.</h1>
+          <p style="color:var(--muted);max-width:52ch">A simple, unified place for your clients to upload passports, offer letters, CVs, and more—while you manage conversations and send back the right files. Built for immigration, study abroad, and relocation workflows.</p>
+          <div style="display:flex;gap:12px;margin-top:18px">
+            <a class="btn" href="#portal">Open Portal</a>
+            <a class="btn btn-outline" href="#demo">See a Demo</a>
+          </div>
+        </div>
+        <!-- Demo upload card (static UI) -->
+        <div class="card upload-card">
+          <div class="tag">New Room • Student</div>
+          <h3 style="margin:14px 0 6px">Upload required documents</h3>
+          <p class="helper">Accepted: PDF, JPG, PNG, DOCX. Max 20MB each.</p>
+          <div class="row" style="margin:12px 0"><input class="input" placeholder="Passport.pdf" /><button class="btn" aria-label="Upload">Upload</button></div>
+          <div class="row" style="margin:12px 0"><input class="input" placeholder="Offer_Letter.pdf" /><button class="btn" aria-label="Upload">Upload</button></div>
+          <div class="row" style="margin:12px 0"><input class="input" placeholder="Proof_of_Funds.pdf" /><button class="btn" aria-label="Upload">Upload</button></div>
+          <p class="helper">Tip: You’ll get a confirmation in the chat once files are received.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="container">
+        <h2>Everything you need to keep documents safe and organized</h2>
+        <div class="features">
+          <div class="card feat">
+            <div class="tag">1</div>
+            <h3>Per‑client rooms</h3>
+            <p style="color:var(--muted)">Every student/visitor/worker has a private space for chat and uploads. Only you and that client can access it.</p>
+          </div>
+          <div class="card feat">
+            <div class="tag">2</div>
+            <h3>Secure file exchange</h3>
+            <p style="color:var(--muted)">Upload, preview, and download documents with access controls designed for confidential data.</p>
+          </div>
+          <div class="card feat">
+            <div class="tag">3</div>
+            <h3>Status & checklists</h3>
+            <p style="color:var(--muted)">Track what’s missing, what’s approved, and what needs revision—at a glance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how">
+      <div class="container">
+        <h2>How it works</h2>
+        <ol style="color:var(--muted);line-height:1.9">
+          <li>Invite your client and create a private room.</li>
+          <li>They upload the required files, you chat and attach your documents back.</li>
+          <li>Export the full thread when it’s time to submit to an embassy or university.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="container card" style="padding:22px">
+        <h2>Contact</h2>
+        <form class="row" onsubmit="event.preventDefault(); alert('Form submitted (demo).');">
+          <input class="input" placeholder="Your name" required />
+          <input class="input" placeholder="Email" type="email" required />
+          <button class="btn" type="submit">Send</button>
+        </form>
+        <p class="helper" style="margin-top:10px">You can replace this form action with your email service or backend endpoint.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © <span id="year"></span> Granduer Investments • All rights reserved
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
