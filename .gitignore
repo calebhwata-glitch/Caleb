@@ -1,0 +1,9 @@
+# create a .gitignore so you don't push secrets/local files
+ni .gitignore -Value @"
+__pycache__/
+*.pyc
+.venv/
+uploads/
+granduer.db
+.env
+"@
