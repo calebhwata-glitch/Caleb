@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: granduer-flask
+    env: python
+    plan: free            # change to starter if you upgrade
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+
+    # This provisions a persistent disk and mounts it at /data
+    disk:
+      name: granduer-data
+      mountPath: /data
+      sizeGB: 2           # pick 2–5 GB to start
+
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MAX_UPLOAD_MB
+        value: "50"
+      - key: UPLOAD_ROOT
+        value: /data/uploads
+      - key: DATABASE_URL
+        value: sqlite:////data/granduer.db
+      # set after first deploy so file links use your domain:
+      # - key: BASE_URL
+      #   value: https://<your-render-subdomain>.onrender.com
